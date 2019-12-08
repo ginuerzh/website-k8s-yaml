@@ -1,0 +1,218 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: web
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blog
+  namespace: web
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: blog
+  template:
+    metadata:
+      name: blog
+      labels:
+        app: blog
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.16-alpine
+        ports:
+        - name: web
+          containerPort: 80
+        volumeMounts:
+        - name: blog-repo
+          mountPath: /usr/share/nginx
+      initContainers:
+      - name: git-clone
+        image: alpine/git:1.0.7
+        args:
+        - clone 
+        - https://github.com/ginuerzh/blog.ginuerzh.xyz.git
+        - .
+        volumeMounts:
+        - name: blog-repo
+          mountPath: /git
+      volumes:
+      - name: blog-repo
+        emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: calculus
+  namespace: web
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: calculus
+  template:
+    metadata:
+      name: calculus
+      labels:
+        app: calculus
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.16-alpine
+        ports:
+        - name: web
+          containerPort: 80
+        volumeMounts:
+        - name: calculus-repo
+          mountPath: /usr/share/nginx/html/calculus
+          subPath: html
+          readOnly: true
+      initContainers:
+      - name: git-clone
+        image: alpine/git:1.0.7
+        args:
+        - clone 
+        - https://github.com/ginuerzh/calculus.ginuerzh.xyz.git
+        - .
+        volumeMounts:
+        - name: calculus-repo
+          mountPath: /git
+      volumes:
+      - name: calculus-repo
+        emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gost
+  namespace: web
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: gost
+  template:
+    metadata:
+      name: gost
+      labels:
+        app: gost
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.16-alpine
+        ports:
+        - name: web
+          containerPort: 80
+        volumeMounts:
+        - name: gost-wiki
+          mountPath: /usr/share/nginx/html/gost
+          subPath: html
+          readOnly: true
+      initContainers:
+      - name: git-clone
+        image: alpine/git:1.0.7
+        args:
+        - clone 
+        - https://github.com/ginuerzh/gost.ginuerzh.xyz.git
+        - .
+        volumeMounts:
+        - name: gost-wiki
+          mountPath: /git
+      volumes:
+      - name: gost-wiki
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blog
+  namespace: web
+spec:
+  selector:
+    app: blog
+  ports:
+  - name: web
+    port: 80
+    targetPort: web
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: calculus
+  namespace: web
+spec:
+  selector:
+    app: calculus
+  ports:
+  - name: web
+    port: 80
+    targetPort: web
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gost
+  namespace: web
+spec:
+  selector:
+    app: gost
+  ports:
+  - name: web
+    port: 80
+    targetPort: web
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: web
+  namespace: web
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/redirect-entry-point: https
+    traefik.ingress.kubernetes.io/redirect-permanent: "true"
+spec:
+  tls:
+  - secretName: ginuerzh-xyz-tls
+  rules:
+  - host: ginuerzh.xyz
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: blog
+          servicePort: 80
+  - host: blog.ginuerzh.xyz
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: blog
+          servicePort: 80
+  - host: docs.ginuerzh.xyz
+    http:
+      paths:
+      - path: /gost
+        backend:
+          serviceName: gost
+          servicePort: 80
+      - path: /calculus
+        backend:
+          serviceName: calculus
+          servicePort: 80
