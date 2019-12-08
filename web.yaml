@@ -32,7 +32,9 @@ spec:
           containerPort: 80
         volumeMounts:
         - name: blog-repo
-          mountPath: /usr/share/nginx
+          mountPath: /usr/share/nginx/html
+          subPath: html
+          readOnly: true
       initContainers:
       - name: git-clone
         image: alpine/git:1.0.7
@@ -91,6 +93,52 @@ spec:
           mountPath: /git
       volumes:
       - name: calculus-repo
+        emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: linux
+  namespace: web
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: linux
+  template:
+    metadata:
+      name: linux
+      labels:
+        app: linux
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.16-alpine
+        ports:
+        - name: web
+          containerPort: 80
+        volumeMounts:
+        - name: linux-repo
+          mountPath: /usr/share/nginx/html/linux
+          subPath: html
+          readOnly: true
+      initContainers:
+      - name: git-clone
+        image: alpine/git:1.0.7
+        args:
+        - clone 
+        - https://github.com/ginuerzh/linux.ginuerzh.xyz.git
+        - .
+        volumeMounts:
+        - name: linux-repo
+          mountPath: /git
+      volumes:
+      - name: linux-repo
         emptyDir: {}
 ---
 apiVersion: apps/v1
@@ -168,6 +216,19 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  name: linux
+  namespace: web
+spec:
+  selector:
+    app: linux
+  ports:
+  - name: web
+    port: 80
+    targetPort: web
+---
+apiVersion: v1
+kind: Service
+metadata:
   name: gost
   namespace: web
 spec:
@@ -215,4 +276,8 @@ spec:
       - path: /calculus
         backend:
           serviceName: calculus
+          servicePort: 80
+      - path: /linux
+        backend:
+          serviceName: linux
           servicePort: 80
