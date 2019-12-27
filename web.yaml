@@ -24,6 +24,24 @@ spec:
       labels:
         app: blog
     spec:
+      initContainers:
+      - name: git
+        image: alpine/git:1.0.7
+        args:
+        - clone 
+        - https://github.com/ginuerzh/blog.ginuerzh.xyz.git
+        - .
+        volumeMounts:
+        - name: blog-repo
+          mountPath: /git
+      - name: hugo
+        image: ginuerzh/hugo:0.40.1
+        args:
+        - -d
+        - html
+        volumeMounts:
+        - name: blog-repo
+          mountPath: /site
       containers:
       - name: nginx
         image: nginx:1.16-alpine
@@ -35,16 +53,6 @@ spec:
           mountPath: /usr/share/nginx/html
           subPath: html
           readOnly: true
-      initContainers:
-      - name: git-clone
-        image: alpine/git:1.0.7
-        args:
-        - clone 
-        - https://github.com/ginuerzh/blog.ginuerzh.xyz.git
-        - .
-        volumeMounts:
-        - name: blog-repo
-          mountPath: /git
       volumes:
       - name: blog-repo
         emptyDir: {}
@@ -70,6 +78,24 @@ spec:
       labels:
         app: calculus
     spec:
+      initContainers:
+      - name: git
+        image: alpine/git:1.0.7
+        args:
+        - clone 
+        - https://github.com/ginuerzh/calculus.ginuerzh.xyz.git
+        - .
+        volumeMounts:
+        - name: calculus-repo
+          mountPath: /git
+      - name: hugo
+        image: ginuerzh/hugo:0.40.1
+        args:
+        - -d
+        - html
+        volumeMounts:
+        - name: calculus-repo
+          mountPath: /site
       containers:
       - name: nginx
         image: nginx:1.16-alpine
@@ -81,16 +107,6 @@ spec:
           mountPath: /usr/share/nginx/html/calculus
           subPath: html
           readOnly: true
-      initContainers:
-      - name: git-clone
-        image: alpine/git:1.0.7
-        args:
-        - clone 
-        - https://github.com/ginuerzh/calculus.ginuerzh.xyz.git
-        - .
-        volumeMounts:
-        - name: calculus-repo
-          mountPath: /git
       volumes:
       - name: calculus-repo
         emptyDir: {}
@@ -116,6 +132,24 @@ spec:
       labels:
         app: linux
     spec:
+      initContainers:
+      - name: git
+        image: alpine/git:1.0.7
+        args:
+        - clone 
+        - https://github.com/ginuerzh/linux.ginuerzh.xyz.git
+        - .
+        volumeMounts:
+        - name: linux-repo
+          mountPath: /git
+      - name: hugo
+        image: ginuerzh/hugo:0.40.1
+        args:
+        - -d
+        - html
+        volumeMounts:
+        - name: linux-repo
+          mountPath: /site
       containers:
       - name: nginx
         image: nginx:1.16-alpine
@@ -127,16 +161,6 @@ spec:
           mountPath: /usr/share/nginx/html/linux
           subPath: html
           readOnly: true
-      initContainers:
-      - name: git-clone
-        image: alpine/git:1.0.7
-        args:
-        - clone 
-        - https://github.com/ginuerzh/linux.ginuerzh.xyz.git
-        - .
-        volumeMounts:
-        - name: linux-repo
-          mountPath: /git
       volumes:
       - name: linux-repo
         emptyDir: {}
@@ -162,6 +186,24 @@ spec:
       labels:
         app: gost
     spec:
+      initContainers:
+      - name: git
+        image: alpine/git:1.0.7
+        args:
+        - clone 
+        - https://github.com/ginuerzh/gost.ginuerzh.xyz.git
+        - .
+        volumeMounts:
+        - name: gost-wiki
+          mountPath: /git
+      - name: hugo
+        image: ginuerzh/hugo:0.40.1
+        args:
+        - -d
+        - html
+        volumeMounts:
+        - name: gost-wiki
+          mountPath: /site
       containers:
       - name: nginx
         image: nginx:1.16-alpine
@@ -173,16 +215,6 @@ spec:
           mountPath: /usr/share/nginx/html/gost
           subPath: html
           readOnly: true
-      initContainers:
-      - name: git-clone
-        image: alpine/git:1.0.7
-        args:
-        - clone 
-        - https://github.com/ginuerzh/gost.ginuerzh.xyz.git
-        - .
-        volumeMounts:
-        - name: gost-wiki
-          mountPath: /git
       volumes:
       - name: gost-wiki
         emptyDir: {}
