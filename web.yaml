@@ -219,6 +219,60 @@ spec:
       - name: gost-wiki
         emptyDir: {}
 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gost-web
+  namespace: web
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: gost-web
+  template:
+    metadata:
+      name: gost
+      labels:
+        app: gost-web
+    spec:
+      initContainers:
+      - name: git
+        image: alpine/git:1.0.7
+        args:
+        - clone 
+        - https://github.com/ginuerzh/gost.ginuerzh.xyz.git
+        - .
+        volumeMounts:
+        - name: gost-web
+          mountPath: /git
+      - name: hugo
+        image: ginuerzh/hugo:0.62.1
+        args:
+        - -d
+        - html
+        volumeMounts:
+        - name: gost-web
+          mountPath: /site
+      containers:
+      - name: nginx
+        image: nginx:1.16-alpine
+        ports:
+        - name: web
+          containerPort: 80
+        volumeMounts:
+        - name: gost-web
+          mountPath: /usr/share/nginx/html
+          subPath: html
+          readOnly: true
+      volumes:
+      - name: gost-web
+        emptyDir: {}
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -271,6 +325,19 @@ spec:
     port: 80
     targetPort: web
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gost-web
+  namespace: web
+spec:
+  selector:
+    app: gost-web
+  ports:
+  - name: web
+    port: 80
+    targetPort: web
+---
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -312,4 +379,11 @@ spec:
       - path: /linux
         backend:
           serviceName: linux
+          servicePort: 80
+  - host: gost.ginuerzh.xyz
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: gost-web
           servicePort: 80
