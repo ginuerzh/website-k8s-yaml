@@ -311,6 +311,10 @@ spec:
         backend:
           serviceName: linux
           servicePort: 80
+      - path: /gost
+        backend:
+          serviceName: gost
+          servicePort: 80
   - host: gost.ginuerzh.xyz
     http:
       paths:
