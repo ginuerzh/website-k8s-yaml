@@ -245,6 +245,7 @@ spec:
         image: alpine/git:1.0.7
         args:
         - clone 
+        - --recursive
         - https://github.com/ginuerzh/gost.ginuerzh.xyz.git
         - .
         volumeMounts:
