@@ -213,7 +213,7 @@ spec:
           containerPort: 80
         volumeMounts:
         - name: gost-web
-          mountPath: /usr/share/nginx/html
+          mountPath: /usr/share/nginx/html/gost
           subPath: html
           readOnly: true
       volumes:
@@ -279,9 +279,8 @@ metadata:
   namespace: web
   annotations:
     kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/redirect-entry-point: https
     traefik.ingress.kubernetes.io/redirect-permanent: "true"
-    traefik.ingress.kubernetes.io/redirect-regex: ^https?://docs.ginuerzh.xyz/gost(.*)
-    traefik.ingress.kubernetes.io/redirect-replacement: http://gost.ginuerzh.xyz
 spec:
   tls:
   - secretName: ginuerzh-xyz-tls
@@ -312,13 +311,6 @@ spec:
           serviceName: linux
           servicePort: 80
       - path: /gost
-        backend:
-          serviceName: gost
-          servicePort: 80
-  - host: gost.ginuerzh.xyz
-    http:
-      paths:
-      - path: /
         backend:
           serviceName: gost
           servicePort: 80
