@@ -83,13 +83,14 @@ spec:
         image: alpine/git:1.0.7
         args:
         - clone 
+        - --recursive
         - https://github.com/ginuerzh/calculus.ginuerzh.xyz.git
         - .
         volumeMounts:
         - name: calculus-repo
           mountPath: /git
       - name: hugo
-        image: ginuerzh/hugo:0.40.1
+        image: ginuerzh/hugo:0.62.1
         args:
         - -d
         - html
