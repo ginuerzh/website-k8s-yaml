@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: syncthing
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: relaysrv
+  namespace: syncthing
+spec:
+  type: LoadBalancer
+  selector:
+    app: relaysrv
+  ports:
+  - name: relay
+    port: 22067
+    protocol: TCP
+    targetPort: relay
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: statusrv
+  namespace: syncthing
+spec:
+  type: LoadBalancer
+  selector:
+    app: relaysrv
+  ports:
+  - name: status
+    port: 22070
+    protocol: TCP
+    targetPort: status
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: relaysrv
+  namespace: syncthing
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: relaysrv
+  template:
+    metadata:
+      name: relaysrv
+      labels:
+        app: relaysrv
+    spec:
+      containers:
+      - name: relaysrv
+        image: syncthing/relaysrv:1.17.0
+        args:
+          - "-global-rate=2097152"
+          - "-keys=/etc/strelaysrv"
+          - "-provided-by=ginuerzh.xyz"
+        ports:
+        - name: relay
+          containerPort: 22067
+        - name: status
+          containerPort: 22070
+        livenessProbe:
+          tcpSocket:
+            port: relay
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 15
+        volumeMounts:
+        - name: strelaysrv
+          mountPath: /etc/strelaysrv
+          readOnly: true
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 500m
+            memory: 500Mi
+      volumes:
+      - name: strelaysrv
+        secret:
+          secretName: strelaysrv
+          

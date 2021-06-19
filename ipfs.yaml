@@ -1,0 +1,228 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ipfs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ipfs-web
+  namespace: ipfs
+spec:
+  selector:
+    app: nginx
+  ports:
+  - name: web
+    port: 80
+    targetPort: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ipfs
+  namespace: ipfs
+spec:
+  selector:
+    app: ipfs
+  ports:
+  - name: web
+    port: 5001
+    targetPort: api
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ipfs-gw
+  namespace: ipfs
+spec:
+  selector:
+    app: ipfs
+  ports:
+  - name: web
+    port: 8080
+    targetPort: gw
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ipfs-swarm
+  namespace: ipfs
+spec:
+  type: LoadBalancer
+  selector:
+    app: ipfs
+  ports:
+  - name: swarm
+    protocol: TCP
+    port: 4001
+    targetPort: swarm
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ipfs-swarm-udp
+  namespace: ipfs
+spec:
+  type: LoadBalancer
+  selector:
+    app: ipfs
+  ports:
+  - name: swarm-udp
+    port: 4001
+    protocol: UDP
+    targetPort: swarm-udp
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ipfs
+  namespace: ipfs
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: ipfs
+  template:
+    metadata:
+      name: ipfs
+      labels:
+        app: ipfs
+    spec:
+      containers:
+      - name: ipfs
+        image: ipfs/go-ipfs:v0.9.0-rc2
+        ports:
+        - name: swarm
+          containerPort: 4001
+        - name: swarm-udp
+          protocol: UDP
+          containerPort: 4001
+        - name: api
+          containerPort: 5001
+        - name: gw
+          containerPort: 8080
+        livenessProbe:
+          tcpSocket:
+            port: swarm
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 15
+        volumeMounts:
+        - name: ipfs-data
+          mountPath: /data/ipfs
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 1000m
+            memory: 2000Mi
+      volumes:
+      - name: ipfs-data
+        persistentVolumeClaim:
+          claimName: ipfs-data
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: ipfs
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      name: nginx
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.20-alpine
+        ports:
+        - name: http
+          containerPort: 80
+        volumeMounts:
+        - name: config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+          readOnly: true
+        - name: htpasswd
+          mountPath: /etc/apache2/htpasswd
+          subPath: htpasswd
+          readOnly: true
+        resources:
+          requests:
+            cpu: 10m
+            memory: 10Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi
+      volumes:
+      - name: config
+        configMap:
+          name: nginx-config
+      - name: htpasswd
+        secret:
+          secretName: htpasswd
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ipfs-data
+  namespace: ipfs
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web
+  namespace: ipfs
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/preserve-host: "true"
+    traefik.ingress.kubernetes.io/redirect-entry-point: https
+spec:
+  rules:
+  - host: ipfs.ginuerzh.xyz
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ipfs-web
+            port:
+              name: web
+  - host: ginuerzh.xyz
+    http:
+      paths:
+      - path: /ipfs
+        pathType: Prefix
+        backend:
+          service:
+            name: ipfs-gw
+            port:
+              name: web
+      - path: /ipns
+        pathType: Prefix
+        backend:
+          service:
+            name: ipfs-gw
+            port:
+              name: web

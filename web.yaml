@@ -3,224 +3,6 @@ kind: Namespace
 metadata:
   name: web
 ---
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: blog
-  namespace: web
-spec:
-  replicas: 1
-  minReadySeconds: 10
-  strategy:
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
-  selector:
-    matchLabels:
-      app: blog
-  template:
-    metadata:
-      name: blog
-      labels:
-        app: blog
-    spec:
-      initContainers:
-      - name: git
-        image: alpine/git:1.0.7
-        args:
-        - clone 
-        - https://github.com/ginuerzh/blog.ginuerzh.xyz.git
-        - .
-        volumeMounts:
-        - name: blog-repo
-          mountPath: /git
-      - name: hugo
-        image: ginuerzh/hugo:0.40.1
-        args:
-        - -d
-        - html
-        volumeMounts:
-        - name: blog-repo
-          mountPath: /site
-      containers:
-      - name: nginx
-        image: nginx:1.16-alpine
-        ports:
-        - name: web
-          containerPort: 80
-        volumeMounts:
-        - name: blog-repo
-          mountPath: /usr/share/nginx/html
-          subPath: html
-          readOnly: true
-      volumes:
-      - name: blog-repo
-        emptyDir: {}
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: calculus
-  namespace: web
-spec:
-  replicas: 1
-  minReadySeconds: 10
-  strategy:
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
-  selector:
-    matchLabels:
-      app: calculus
-  template:
-    metadata:
-      name: calculus
-      labels:
-        app: calculus
-    spec:
-      initContainers:
-      - name: git
-        image: alpine/git:1.0.7
-        args:
-        - clone 
-        - --recursive
-        - https://github.com/ginuerzh/calculus.ginuerzh.xyz.git
-        - .
-        volumeMounts:
-        - name: calculus-repo
-          mountPath: /git
-      - name: hugo
-        image: ginuerzh/hugo:0.62.1
-        args:
-        - -d
-        - html
-        volumeMounts:
-        - name: calculus-repo
-          mountPath: /site
-      containers:
-      - name: nginx
-        image: nginx:1.16-alpine
-        ports:
-        - name: web
-          containerPort: 80
-        volumeMounts:
-        - name: calculus-repo
-          mountPath: /usr/share/nginx/html/calculus
-          subPath: html
-          readOnly: true
-      volumes:
-      - name: calculus-repo
-        emptyDir: {}
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: linux
-  namespace: web
-spec:
-  replicas: 1
-  minReadySeconds: 10
-  strategy:
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
-  selector:
-    matchLabels:
-      app: linux
-  template:
-    metadata:
-      name: linux
-      labels:
-        app: linux
-    spec:
-      initContainers:
-      - name: git
-        image: alpine/git:1.0.7
-        args:
-        - clone 
-        - https://github.com/ginuerzh/linux.ginuerzh.xyz.git
-        - .
-        volumeMounts:
-        - name: linux-repo
-          mountPath: /git
-      - name: hugo
-        image: ginuerzh/hugo:0.40.1
-        args:
-        - -d
-        - html
-        volumeMounts:
-        - name: linux-repo
-          mountPath: /site
-      containers:
-      - name: nginx
-        image: nginx:1.16-alpine
-        ports:
-        - name: web
-          containerPort: 80
-        volumeMounts:
-        - name: linux-repo
-          mountPath: /usr/share/nginx/html/linux
-          subPath: html
-          readOnly: true
-      volumes:
-      - name: linux-repo
-        emptyDir: {}
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: gost
-  namespace: web
-spec:
-  replicas: 1
-  minReadySeconds: 10
-  strategy:
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
-  selector:
-    matchLabels:
-      app: gost
-  template:
-    metadata:
-      name: gost
-      labels:
-        app: gost
-    spec:
-      initContainers:
-      - name: git
-        image: alpine/git:1.0.7
-        args:
-        - clone 
-        - --recursive
-        - https://github.com/ginuerzh/gost.ginuerzh.xyz.git
-        - .
-        volumeMounts:
-        - name: gost-web
-          mountPath: /git
-      - name: hugo
-        image: ginuerzh/hugo:0.62.1
-        args:
-        - -d
-        - html
-        volumeMounts:
-        - name: gost-web
-          mountPath: /site
-      containers:
-      - name: nginx
-        image: nginx:1.16-alpine
-        ports:
-        - name: web
-          containerPort: 80
-        volumeMounts:
-        - name: gost-web
-          mountPath: /usr/share/nginx/html/gost
-          subPath: html
-          readOnly: true
-      volumes:
-      - name: gost-web
-        emptyDir: {}
----
 apiVersion: v1
 kind: Service
 metadata:
@@ -273,45 +55,304 @@ spec:
     port: 80
     targetPort: web
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blog
+  namespace: web
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: blog
+  template:
+    metadata:
+      name: blog
+      labels:
+        app: blog
+    spec:
+      initContainers:
+      - name: git
+        image: alpine/git:1.0.7
+        args:
+        - clone 
+        - https://github.com/ginuerzh/blog.ginuerzh.xyz.git
+        - .
+        volumeMounts:
+        - name: blog-repo
+          mountPath: /git
+      - name: hugo
+        image: ginuerzh/hugo:0.40.1
+        args:
+        - -d
+        - html
+        volumeMounts:
+        - name: blog-repo
+          mountPath: /site
+      containers:
+      - name: nginx
+        image: nginx:1.18-alpine
+        ports:
+        - name: web
+          containerPort: 80
+        volumeMounts:
+        - name: blog-repo
+          mountPath: /usr/share/nginx/html
+          subPath: html
+          readOnly: true
+        resources:
+          requests:
+            cpu: 50m
+            memory: 50Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi
+      volumes:
+      - name: blog-repo
+        emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: calculus
+  namespace: web
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: calculus
+  template:
+    metadata:
+      name: calculus
+      labels:
+        app: calculus
+    spec:
+      initContainers:
+      - name: git
+        image: alpine/git:1.0.7
+        args:
+        - clone 
+        - --recursive
+        - https://github.com/ginuerzh/calculus.ginuerzh.xyz.git
+        - .
+        volumeMounts:
+        - name: calculus-repo
+          mountPath: /git
+      - name: hugo
+        image: ginuerzh/hugo:0.62.1
+        args:
+        - -d
+        - html
+        volumeMounts:
+        - name: calculus-repo
+          mountPath: /site
+      containers:
+      - name: nginx
+        image: nginx:1.18-alpine
+        ports:
+        - name: web
+          containerPort: 80
+        volumeMounts:
+        - name: calculus-repo
+          mountPath: /usr/share/nginx/html/calculus
+          subPath: html
+          readOnly: true
+        resources:
+          requests:
+            cpu: 50m
+            memory: 50Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi
+      volumes:
+      - name: calculus-repo
+        emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: linux
+  namespace: web
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: linux
+  template:
+    metadata:
+      name: linux
+      labels:
+        app: linux
+    spec:
+      initContainers:
+      - name: git
+        image: alpine/git:1.0.7
+        args:
+        - clone 
+        - https://github.com/ginuerzh/linux.ginuerzh.xyz.git
+        - .
+        volumeMounts:
+        - name: linux-repo
+          mountPath: /git
+      - name: hugo
+        image: ginuerzh/hugo:0.40.1
+        args:
+        - -d
+        - html
+        volumeMounts:
+        - name: linux-repo
+          mountPath: /site
+      containers:
+      - name: nginx
+        image: nginx:1.18-alpine
+        ports:
+        - name: web
+          containerPort: 80
+        volumeMounts:
+        - name: linux-repo
+          mountPath: /usr/share/nginx/html/linux
+          subPath: html
+          readOnly: true
+        resources:
+          requests:
+            cpu: 50m
+            memory: 50Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi
+      volumes:
+      - name: linux-repo
+        emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gost
+  namespace: web
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: gost
+  template:
+    metadata:
+      name: gost
+      labels:
+        app: gost
+    spec:
+      initContainers:
+      - name: git
+        image: alpine/git:1.0.7
+        args:
+        - clone 
+        - --recursive
+        - https://github.com/ginuerzh/gost.ginuerzh.xyz.git
+        - .
+        volumeMounts:
+        - name: gost-web
+          mountPath: /git
+      - name: hugo
+        image: ginuerzh/hugo:0.62.1
+        args:
+        - -d
+        - html
+        volumeMounts:
+        - name: gost-web
+          mountPath: /site
+      containers:
+      - name: nginx
+        image: nginx:1.18-alpine
+        ports:
+        - name: web
+          containerPort: 80
+        volumeMounts:
+        - name: gost-web
+          mountPath: /usr/share/nginx/html/gost
+          subPath: html
+          readOnly: true
+        resources:
+          requests:
+            cpu: 50m
+            memory: 50Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi
+      volumes:
+      - name: gost-web
+        emptyDir: {}
+---
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: web
   namespace: web
   annotations:
     kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/preserve-host: "true"
     traefik.ingress.kubernetes.io/redirect-entry-point: https
-    traefik.ingress.kubernetes.io/redirect-permanent: "true"
 spec:
-  tls:
-  - secretName: ginuerzh-xyz-tls
   rules:
   - host: ginuerzh.xyz
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: blog
-          servicePort: 80
+          service:
+            name: blog
+            port:
+              name: web
   - host: blog.ginuerzh.xyz
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: blog
-          servicePort: 80
+          service:
+            name: blog
+            port:
+              name: web
   - host: docs.ginuerzh.xyz
     http:
       paths:
       - path: /calculus
+        pathType: Prefix
         backend:
-          serviceName: calculus
-          servicePort: 80
+          service:
+            name: calculus
+            port:
+              name: web
       - path: /linux
+        pathType: Prefix
         backend:
-          serviceName: linux
-          servicePort: 80
+          service:
+            name: linux
+            port:
+              name: web
       - path: /gost
+        pathType: Prefix
         backend:
-          serviceName: gost
-          servicePort: 80
+          service:
+            name: gost
+            port:
+              name: web
