@@ -1,7 +1,11 @@
-#### Blog: 
+#### Blog
 
 [https://blog.ginuerzh.xyz](https://blog.ginuerzh.xyz)
 
-#### IPFS Gateway: 
+#### gcr.io mirror
 
-[https://ginuerzh.xyz/ipfs/{content ID}/{optional path to resource}](https://ginuerzh.xyz/ipfs/bafybeifx7yeb55armcsxwwitkymga5xf53dxiarykms3ygqic223w5sk3m)
+[https://gcr.ginuerzh.xyz](https://gcr.ginuerzh.xyz)
+
+#### k8s.gcr.io mirror 
+
+[https://k8s-gcr.ginuerzh.xyz](https://k8s-gcr.ginuerzh.xyz)

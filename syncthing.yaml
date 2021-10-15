@@ -58,7 +58,7 @@ spec:
       - name: relaysrv
         image: syncthing/relaysrv:1.17.0
         args:
-          - "-global-rate=2097152"
+          - "-global-rate=1048576"
           - "-keys=/etc/strelaysrv"
           - "-provided-by=ginuerzh.xyz"
         ports:
@@ -78,11 +78,11 @@ spec:
           readOnly: true
         resources:
           requests:
+            cpu: 10m
+            memory: 10Mi
+          limits:
             cpu: 100m
             memory: 100Mi
-          limits:
-            cpu: 500m
-            memory: 500Mi
       volumes:
       - name: strelaysrv
         secret:
